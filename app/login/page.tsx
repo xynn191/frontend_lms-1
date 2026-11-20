@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -25,10 +26,13 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
+      let data: any = null;
+      try {
+        data = await response.json();
+      } catch (e) {}
 
       if (!response.ok) {
-        throw new Error(data.message || "Gagal login, periksa kredensial Anda");
+        throw new Error(data?.message || "Gagal login, periksa kembali Email/Username/NIS dan password Anda");
       }
 
       // Login berhasil, simpan token & role
@@ -47,6 +51,12 @@ export default function LoginPage() {
         case "siswa":
           router.push("/siswa/dashboard");
           break;
+        case "kurikulum":
+          router.push("/kurikulum/dashboard");
+          break;
+        case "kepala_sekolah":
+          router.push("/kepala-sekolah/dashboard");
+          break;
         default:
           router.push("/dashboard");
       }
@@ -55,540 +65,296 @@ export default function LoginPage() {
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
   return (
-    <main className="min-h-screen bg-white text-gray-800">
+    <main className="min-h-screen bg-[#f8fafc] text-slate-800 flex flex-col justify-between selection:bg-blue-100 selection:text-[#003399]">
 
-      {/* ================= MAIN LOGIN AREA ================= */}
-      <section className="min-h-[calc(100vh-147px)]">
-
-        <div className="mx-auto grid min-h-[calc(100vh-147px)] max-w-[1400px] grid-cols-1 lg:grid-cols-2">
-
-          {/* ================= LEFT SIDE ================= */}
-          <div className="relative overflow-hidden bg-[#1d3557] px-8 py-8 text-white md:px-12 lg:px-10 xl:px-14">
-
-            {/* Logo */}
-            <div className="flex items-center gap-3">
-
-              <div className="flex h-10 w-10 items-center justify-center">
-                <svg
-                  viewBox="0 0 48 48"
-                  className="h-10 w-10"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M5 8C5 6.9 5.9 6 7 6H20C25 6 28 9 28 13V40C25.8 37.8 23.2 36 19 36H7C5.9 36 5 35.1 5 34V8Z"
-                    fill="white"
-                  />
-                  <path
-                    d="M43 8C43 6.9 42.1 6 41 6H28C23 6 20 9 20 13V40C22.2 37.8 24.8 36 29 36H41C42.1 36 43 35.1 43 34V8Z"
-                    fill="white"
-                  />
-                </svg>
-              </div>
-
-              <div>
-                <p className="font-serif text-[18px] leading-none">
-                  EDU-Class
-                </p>
-
-                <p className="mt-1 text-[9px] text-gray-300">
-                  Learning Management System
-                </p>
-              </div>
-
+      {/* ================= TOP NAV BAR ================= */}
+      <header className="w-full bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="w-9 h-9 rounded-xl bg-[#003399] flex items-center justify-center text-white text-lg shadow-sm group-hover:scale-105 transition-transform">
+              🎓
             </div>
+            <div>
+              <span className="font-bold text-base tracking-tight text-[#172b4d] block leading-tight">
+                EDU CLASS
+              </span>
+              <span className="text-[10px] text-slate-500 font-medium block">
+                Learning Management System
+              </span>
+            </div>
+          </Link>
 
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-[#003399] px-3.5 py-2 rounded-xl hover:bg-slate-100 transition"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Kembali ke Beranda
+          </Link>
+        </div>
+      </header>
 
-            {/* Welcome */}
-            <div className="mt-8 max-w-[420px]">
+      {/* ================= MAIN CONTENT ================= */}
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+        <div className="w-full max-w-5xl bg-white rounded-3xl border border-slate-200/80 shadow-xl shadow-slate-200/50 overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[580px]">
 
-              <h1 className="text-[25px] font-bold leading-tight">
-                Selamat Datang di
+          {/* ================= LEFT SIDE (BRAND & VALUE) ================= */}
+          <div className="lg:col-span-5 bg-gradient-to-br from-[#1d3557] via-[#102a45] to-[#0b1d30] p-8 lg:p-10 text-white flex flex-col justify-between relative overflow-hidden">
+            {/* Background decorative circles */}
+            <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-blue-500/10 blur-2xl pointer-events-none" />
+            <div className="absolute -bottom-12 -left-12 w-48 h-48 rounded-full bg-[#003399]/20 blur-2xl pointer-events-none" />
+
+            <div className="relative z-10">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-[11px] font-semibold text-blue-200 mb-6">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                Portal Terpadu Sekolah Digital
+              </div>
+
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white leading-tight">
+                Mulai Pembelajaran <br />
+                <span className="text-blue-400">Efektif & Terstruktur</span>
               </h1>
 
-              <h2 className="text-[25px] font-bold leading-tight text-blue-500">
-                EDU-Class
-              </h2>
-
-              <p className="mt-2 max-w-[400px] text-[11px] leading-relaxed text-gray-300">
-                Platform e-learning modern untuk mendukung proses
-                belajar mengajar yang lebih efektif, terstruktur,
-                dan terintegrasi.
+              <p className="mt-3 text-xs leading-relaxed text-slate-300">
+                Akses materi, kerjakan tugas, pantau kuis & ujian harian, serta rekapitulasi nilai dalam satu ekosistem e-learning terpadu.
               </p>
 
-            </div>
-
-
-            {/* ================= FEATURES ================= */}
-            <div className="mt-7 space-y-5">
-
-              {/* Feature 1 */}
-              <div className="flex items-center gap-4">
-
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-500/20 text-blue-300">
-
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="h-6 w-6"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                  >
-                    <path d="M4 5h16v11H4z" />
-                    <path d="M8 20h8M12 16v4" />
-                    <path d="M7 8h10M7 11h7" />
-                  </svg>
-
-                </div>
-
-                <div>
-                  <h3 className="text-[11px] font-semibold">
-                    Pembelajaran Terstruktur
-                  </h3>
-
-                  <p className="mt-1 text-[9px] text-gray-300">
-                    Kelola materi, tugas, dan asesmen dengan mudah.
-                  </p>
-                </div>
-
-              </div>
-
-
-              {/* Feature 2 */}
-              <div className="flex items-center gap-4">
-
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-500/20 text-blue-300">
-
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="h-6 w-6"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                  >
-                    <circle cx="12" cy="8" r="3" />
-                    <path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6" />
-                  </svg>
-
-                </div>
-
-                <div>
-                  <h3 className="text-[11px] font-semibold">
-                    Kolaborasi Tanpa Batas
-                  </h3>
-
-                  <p className="mt-1 text-[9px] text-gray-300">
-                    Guru, siswa, dan sekolah terhubung dalam satu sistem.
-                  </p>
-                </div>
-
-              </div>
-
-
-              {/* Feature 3 */}
-              <div className="flex items-center gap-4">
-
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-500/20 text-blue-300">
-
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="h-6 w-6"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                  >
-                    <path d="M4 18V6" />
-                    <path d="M4 18h16" />
-                    <path d="M7 15l3-4 3 2 4-6" />
-                  </svg>
-
-                </div>
-
-                <div>
-                  <h3 className="text-[11px] font-semibold">
-                    Monitoring Real-Time
-                  </h3>
-
-                  <p className="mt-1 text-[9px] text-gray-300">
-                    Pantau perkembangan belajar siswa secara real-time.
-                  </p>
-                </div>
-
-              </div>
-
-            </div>
-
-
-            {/* ================= LAPTOP ILLUSTRATION ================= */}
-            <div className="mt-7 flex justify-center">
-
-              <div className="relative h-[135px] w-[230px]">
-
-                {/* Books */}
-                <div className="absolute bottom-0 right-0">
-
-                  <div className="h-3 w-16 rounded-sm bg-blue-200" />
-                  <div className="mt-1 h-3 w-20 rounded-sm bg-white" />
-                  <div className="mt-1 h-3 w-16 rounded-sm bg-blue-300" />
-
-                </div>
-
-                {/* Laptop */}
-                <div className="absolute bottom-4 left-5 h-[95px] w-[180px] rounded-t-lg border-[4px] border-gray-200 bg-gray-300 shadow-lg">
-
-                  <div className="m-2 h-[78px] overflow-hidden rounded bg-[#eaf3fa]">
-
-                    <div className="flex h-4 items-center bg-[#2b6cb0] px-2">
-                      <div className="h-1 w-12 rounded bg-white/80" />
-                    </div>
-
-                    <div className="flex gap-2 p-3">
-
-                      <div className="w-1/3 space-y-2">
-                        <div className="h-5 rounded bg-blue-200" />
-                        <div className="h-8 rounded bg-white" />
-                      </div>
-
-                      <div className="flex-1">
-                        <div className="h-4 rounded bg-white" />
-                        <div className="mt-2 h-9 rounded bg-blue-100" />
-                        <div className="mt-2 flex gap-1">
-                          <div className="h-3 flex-1 rounded bg-blue-300" />
-                          <div className="h-3 flex-1 rounded bg-blue-200" />
-                        </div>
-                      </div>
-
-                    </div>
-
+              {/* Feature Points */}
+              <div className="mt-8 space-y-4">
+                <div className="flex items-start gap-3 p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+                  <div className="w-8 h-8 rounded-xl bg-blue-500/20 text-blue-300 flex items-center justify-center text-sm shrink-0 mt-0.5">
+                    📚
                   </div>
-
+                  <div>
+                    <h3 className="text-xs font-bold text-white">Materi & Penugasan Lengkap</h3>
+                    <p className="text-[11px] text-slate-300 leading-snug mt-0.5">
+                      Modul PDF, lampiran eksternal, dan deadline tugas otomatis.
+                    </p>
+                  </div>
                 </div>
 
-                {/* Laptop base */}
-                <div className="absolute bottom-0 left-0 h-3 w-[215px] rounded-full bg-gray-200 shadow" />
-
-                {/* Plant */}
-                <div className="absolute bottom-1 left-0">
-
-                  <div className="h-8 w-5 rounded-b-full bg-[#8ab17d]" />
-
-                  <div className="absolute -left-3 bottom-6 h-5 w-8 -rotate-45 rounded-full bg-[#91bd8b]" />
-
-                  <div className="absolute left-2 bottom-8 h-5 w-8 rotate-45 rounded-full bg-[#7da878]" />
-
+                <div className="flex items-start gap-3 p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+                  <div className="w-8 h-8 rounded-xl bg-indigo-500/20 text-indigo-300 flex items-center justify-center text-sm shrink-0 mt-0.5">
+                    ⏱️
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold text-white">Kuis & CBT Ujian Mandiri</h3>
+                    <p className="text-[11px] text-slate-300 leading-snug mt-0.5">
+                      Sistem asesmen formatif kuis & sumatif ujian dengan timer langsung.
+                    </p>
+                  </div>
                 </div>
 
+                <div className="flex items-start gap-3 p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center text-sm shrink-0 mt-0.5">
+                    🔒
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold text-white">Multi-Role Terproteksi</h3>
+                    <p className="text-[11px] text-slate-300 leading-snug mt-0.5">
+                      Hak akses terpisah untuk Siswa, Guru, Admin, Kurikulum & Pimpinan.
+                    </p>
+                  </div>
+                </div>
               </div>
-
             </div>
 
+            {/* Bottom mini badge */}
+            <div className="mt-8 pt-6 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-400 relative z-10">
+              <span>SMK Citra Negara</span>
+              <span className="font-medium text-slate-300">Tahun Ajaran 2026/2027</span>
+            </div>
           </div>
 
-
-          {/* ================= RIGHT SIDE ================= */}
-          <div className="flex items-center justify-center bg-white px-8 py-12 md:px-16">
-
-            <div className="w-full max-w-[430px]">
-
-              {/* Title */}
-              <div className="mb-10 text-center">
-
-                <h2 className="text-[24px] font-bold text-[#172b4d]">
-                  Selamat Datang !
+          {/* ================= RIGHT SIDE (LOGIN FORM) ================= */}
+          <div className="lg:col-span-7 p-8 sm:p-12 flex flex-col justify-center bg-white">
+            <div className="max-w-md w-full mx-auto">
+              
+              <div className="mb-8">
+                <h2 className="text-2xl font-extrabold text-[#172b4d] tracking-tight">
+                  Selamat Datang! 👋
                 </h2>
-
-                <p className="mt-1 text-[13px] font-medium text-[#172b4d]">
-                  Masuk ke Akun Anda
+                <p className="text-xs text-slate-500 mt-1.5 font-medium leading-relaxed">
+                  Masukkan NIS / Username / Email serta kata sandi Anda untuk melanjutkan ke dasbor akun.
                 </p>
-
               </div>
 
-
-              {/* ================= LOGIN FORM ================= */}
-              <form onSubmit={handleLogin} className="space-y-5">
-
-                {/* Tampilkan pesan error jika ada */}
-                {error && (
-                  <div className="rounded-lg bg-red-50 p-3 text-[12px] text-red-600 border border-red-100">
-                    {error}
+              {/* Error Message Box */}
+              {error && (
+                <div className="mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-3 animate-in fade-in duration-200">
+                  <div className="w-6 h-6 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center font-bold shrink-0 mt-0.5">
+                    ⚠️
                   </div>
-                )}
+                  <div className="space-y-1">
+                    <p className="font-semibold text-rose-900">Kendala Masuk Akun</p>
+                    <p className="leading-relaxed text-rose-700">{error}</p>
+                    {error.includes("Laragon") && (
+                      <p className="mt-1 text-[11px] bg-rose-100/70 p-2 rounded-lg text-rose-900 font-medium">
+                        👉 Solusi: Buka aplikasi Laragon di komputer Anda, lalu klik tombol <b>&quot;Start All&quot;</b> agar database MySQL aktif.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
 
-                {/* Username */}
+              {/* Form */}
+              <form onSubmit={handleLogin} className="space-y-5">
                 <div>
-
-                  <label className="mb-2 block text-[11px] font-semibold text-gray-700">
-                    Email atau Username
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    Email, Username, atau NIS Siswa <span className="text-rose-500">*</span>
                   </label>
-
                   <div className="relative">
-
-                    <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-
-                      <svg
-                        viewBox="0 0 24 24"
-                        className="h-4 w-4"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                      >
-                        <circle cx="12" cy="8" r="3" />
-                        <path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6" />
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
-
                     </div>
-
                     <input
                       type="text"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Masukkan email atau username"
-                      className="h-11 w-full rounded-lg bg-[#e5e5e5] pl-10 pr-4 text-[11px] outline-none transition placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500"
+                      placeholder="Contoh: 10245678 / ahmad_siswa / guru@sekolah.sch.id"
+                      required
+                      className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-[#003399] focus:ring-4 focus:ring-blue-100 transition shadow-sm"
                     />
-
                   </div>
-
                 </div>
 
-
-                {/* Password */}
                 <div>
-
-                  <label className="mb-2 block text-[11px] font-semibold text-gray-700">
-                    Password
-                  </label>
-
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-bold text-slate-700">
+                      Kata Sandi <span className="text-rose-500">*</span>
+                    </label>
+                    <span className="text-[11px] text-slate-400">Default: admin123</span>
+                  </div>
                   <div className="relative">
-
-                    <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-
-                      <svg
-                        viewBox="0 0 24 24"
-                        className="h-4 w-4"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                      >
-                        <rect x="5" y="10" width="14" height="10" rx="2" />
-                        <path d="M8 10V7a4 4 0 018 0v3" />
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                       </svg>
-
                     </div>
-
-
                     <input
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Masukkan password"
-                      className="h-11 w-full rounded-lg bg-[#e5e5e5] pl-10 pr-11 text-[11px] outline-none transition placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500"
+                      placeholder="Masukkan kata sandi akun Anda"
+                      required
+                      className="w-full pl-10 pr-11 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-[#003399] focus:ring-4 focus:ring-blue-100 transition shadow-sm"
                     />
-
-
-                    {/* Show password */}
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 transition"
                       aria-label="Tampilkan password"
                     >
-
                       {showPassword ? (
-                        <svg
-                          viewBox="0 0 24 24"
-                          className="h-4 w-4"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                        >
-                          <path d="M3 3l18 18" />
-                          <path d="M10.5 10.5a2 2 0 002.8 2.8" />
-                          <path d="M9.9 5.1A10.6 10.6 0 0112 5c5 0 9 4 10 7-0.4 1.1-1.3 2.5-2.6 3.6" />
-                          <path d="M6.2 6.2C4.5 7.3 3.2 8.9 2 12c1 3 5 7 10 7 1.5 0 2.8-.3 4-.8" />
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
                         </svg>
                       ) : (
-                        <svg
-                          viewBox="0 0 24 24"
-                          className="h-4 w-4"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                        >
-                          <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
-                          <circle cx="12" cy="12" r="3" />
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                         </svg>
                       )}
-
                     </button>
-
                   </div>
-
                 </div>
 
-
-                {/* Remember Me */}
-                <div className="flex items-center gap-2">
-
-                  <input
-                    id="remember"
-                    type="checkbox"
-                    className="h-4 w-4 rounded border-gray-300 accent-blue-600"
-                  />
-
-                  <label
-                    htmlFor="remember"
-                    className="cursor-pointer text-[10px] text-gray-600"
-                  >
-                    Ingat saya
+                <div className="flex items-center justify-between text-xs">
+                  <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      id="remember"
+                      className="w-4 h-4 rounded border-slate-300 text-[#003399] focus:ring-[#003399] accent-[#003399] cursor-pointer"
+                    />
+                    <span className="text-slate-600 font-medium">Ingat saya di perangkat ini</span>
                   </label>
 
+                  <a
+                    href="#bantuan"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      alert("Silakan hubungi staf administrator atau tim kurikulum sekolah untuk mereset kata sandi akun Anda.");
+                    }}
+                    className="font-semibold text-[#003399] hover:underline"
+                  >
+                    Lupa Password?
+                  </a>
                 </div>
 
-
-                {/* Login Button */}
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className={`mt-5 h-11 w-full rounded-lg text-[12px] font-semibold text-white transition active:scale-[0.99] ${
-                    isLoading ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+                  className={`w-full py-3.5 px-4 rounded-xl text-xs font-bold text-white transition-all shadow-md shadow-blue-900/15 flex items-center justify-center gap-2 ${
+                    isLoading
+                      ? "bg-slate-400 cursor-not-allowed"
+                      : "bg-[#003399] hover:bg-[#002673] active:scale-[0.99]"
                   }`}
                 >
-                  {isLoading ? "Memproses..." : "Masuk"}
+                  {isLoading ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Memverifikasi Akun...
+                    </>
+                  ) : (
+                    <>
+                      <span>Masuk ke Portal</span>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                      </svg>
+                    </>
+                  )}
                 </button>
-
               </form>
 
-            </div>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-      {/* ================= FOOTER ================= */}
-      <footer className="bg-[#10294d] text-white">
-
-        <div className="mx-auto grid max-w-[1400px] gap-8 px-8 py-7 md:grid-cols-4">
-
-          {/* Logo & description */}
-          <div>
-
-            <div className="flex items-center gap-3">
-
-              <svg
-                viewBox="0 0 48 48"
-                className="h-9 w-9"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M5 8C5 6.9 5.9 6 7 6H20C25 6 28 9 28 13V40C25.8 37.8 23.2 36 19 36H7C5.9 36 5 35.1 5 34V8Z"
-                  fill="white"
-                />
-                <path
-                  d="M43 8C43 6.9 42.1 6 41 6H28C23 6 20 9 20 13V40C22.2 37.8 24.8 36 29 36H41C42.1 36 43 35.1 43 34V8Z"
-                  fill="white"
-                />
-              </svg>
-
-              <div>
-                <p className="font-serif text-[16px]">
-                  EDU-Class
+              {/* Roles quick guide */}
+              <div className="mt-8 pt-6 border-t border-slate-100">
+                <p className="text-[11px] font-semibold text-slate-500 mb-2.5 text-center">
+                  Panduan Kredensial Akses Peran:
                 </p>
-
-                <p className="text-[8px] text-gray-300">
-                  Learning Management System
-                </p>
+                <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
+                  <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
+                    <p className="font-bold text-slate-700">Siswa</p>
+                    <p className="text-slate-500">NIS / Username</p>
+                  </div>
+                  <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
+                    <p className="font-bold text-slate-700">Guru</p>
+                    <p className="text-slate-500">Email / Username</p>
+                  </div>
+                  <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
+                    <p className="font-bold text-slate-700">Admin</p>
+                    <p className="text-slate-500">admin / Email</p>
+                  </div>
+                </div>
               </div>
 
             </div>
-
-            <p className="mt-3 max-w-[230px] text-[9px] leading-relaxed text-gray-300">
-              Platform e-learning modern untuk mendukung
-              pembelajaran yang lebih efektif dan interaktif
-              dimana saja dan kapan saja.
-            </p>
-
-            <div className="mt-3 flex gap-2">
-
-              <div className="h-7 w-7 rounded-full bg-gray-200" />
-              <div className="h-7 w-7 rounded-full bg-gray-200" />
-              <div className="h-7 w-7 rounded-full bg-gray-200" />
-              <div className="h-7 w-7 rounded-full bg-gray-200" />
-
-            </div>
-
-          </div>
-
-
-          {/* Peran */}
-          <div>
-
-            <h3 className="mb-3 text-[10px] font-bold">
-              Peran
-            </h3>
-
-            <ul className="space-y-1 text-[9px] text-gray-300">
-              <li>Administrator</li>
-              <li>Guru</li>
-              <li>Siswa</li>
-              <li>Kurikulum</li>
-              <li>Kepala Sekolah</li>
-            </ul>
-
-          </div>
-
-
-          {/* Alamat */}
-          <div>
-
-            <h3 className="mb-3 text-[10px] font-bold">
-              Alamat
-            </h3>
-
-            <p className="text-[9px] leading-relaxed text-gray-300">
-              Jl. Tanah Baru II, Kemiri Jaya
-              <br />
-              No. 99, Beji, Kecamatan Beji,
-              <br />
-              Kota Depok, Jawa Barat
-              <br />
-              16421
-            </p>
-
-          </div>
-
-
-          {/* Contact */}
-          <div>
-
-            <h3 className="mb-3 text-[10px] font-bold">
-              Hubungi Kami
-            </h3>
-
-            <p className="text-[9px] leading-relaxed text-gray-300">
-              SMK Citra Negara
-              <br />
-              info@citranegara.sch.id
-              <br />
-              (+62) 812-3456-7890
-            </p>
-
           </div>
 
         </div>
+      </div>
 
-
-        {/* Copyright */}
-        <div className="border-t border-white/20 py-3 text-center text-[9px] text-white">
-          © 2026 Edu-Class — Learning Management System. All Rights Reserved.
+      {/* ================= FOOTER ================= */}
+      <footer className="w-full bg-[#10294d] text-white py-6 border-t border-slate-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+          <div className="flex items-center gap-2">
+            <span className="text-base">🎓</span>
+            <span className="font-bold text-white tracking-wide">EDU CLASS</span>
+            <span>— Sistem Pembelajaran Terpadu SMK Citra Negara</span>
+          </div>
+          <div>
+            &copy; 2026 Edu Class. Hak Cipta Dilindungi.
+          </div>
         </div>
-
       </footer>
 
     </main>

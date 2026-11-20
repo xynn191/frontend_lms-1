@@ -1,28 +1,38 @@
 "use client";
+
 import { useEffect, useState } from "react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
+type Jurusan = {
+  id: number;
+  kode_jurusan: string;
+  nama_jurusan: string;
+  deskripsi: string;
+};
+
 export default function JurusanPage() {
-  const [data, setData] = useState([]);
-  const [form, setForm] = useState({});
-  const [editingId, setEditingId] = useState(null);
+  const [data, setData] = useState<Jurusan[]>([]);
+  const [form, setForm] = useState({ kode_jurusan: "", nama_jurusan: "", deskripsi: "" });
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("");
-
-  const fields = [
-    { label: 'kode_jurusan', key: 'kode_jurusan' },
-    { label: 'nama_jurusan', key: 'nama_jurusan' },
-    { label: 'deskripsi', key: 'deskripsi' }
-  ];
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const loadData = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/jurusan`);
+      setLoading(true);
+      const res = await fetch(`${API_URL}/api/jurusan`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token") || ""}` }
+      });
       const json = await res.json();
       setData(json || []);
     } catch (e) {
       console.error(e);
+      setError("Gagal memuat data jurusan");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -31,101 +41,211 @@ export default function JurusanPage() {
   }, []);
 
   const openCreate = () => {
-    setForm({});
+    setForm({ kode_jurusan: "", nama_jurusan: "", deskripsi: "" });
     setEditingId(null);
+    setError("");
     setIsOpen(true);
   };
 
-  const openEdit = (item) => {
-    setForm(item);
+  const openEdit = (item: Jurusan) => {
+    setForm({
+      kode_jurusan: item.kode_jurusan,
+      nama_jurusan: item.nama_jurusan,
+      deskripsi: item.deskripsi || ""
+    });
     setEditingId(item.id);
+    setError("");
     setIsOpen(true);
   };
 
-  const save = async (e) => {
+  const save = async (e: React.FormEvent) => {
     e.preventDefault();
     const url = editingId ? `${API_URL}/api/jurusan/${editingId}` : `${API_URL}/api/jurusan`;
     const method = editingId ? "PUT" : "POST";
-    
+
     try {
-      await fetch(url, {
+      const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token") || ""}`
+        },
         body: JSON.stringify(form),
       });
-      setMessage("Data berhasil disimpan");
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || "Gagal menyimpan data");
+      }
+
+      setMessage(editingId ? "Jurusan berhasil diperbarui" : "Jurusan baru berhasil ditambahkan");
+      setTimeout(() => setMessage(""), 3500);
       setIsOpen(false);
       loadData();
-    } catch (e) {
-      console.error(e);
+    } catch (err: any) {
+      setError(err.message || "Terjadi kesalahan");
     }
   };
 
-  const remove = async (id) => {
-    if (!confirm("Hapus data ini?")) return;
+  const remove = async (id: number) => {
+    if (!confirm("Apakah Anda yakin ingin menghapus jurusan ini?")) return;
     try {
-      await fetch(`${API_URL}/api/jurusan/${id}`, { method: "DELETE" });
+      const res = await fetch(`${API_URL}/api/jurusan/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${localStorage.getItem("token") || ""}` }
+      });
+      if (!res.ok) throw new Error("Gagal menghapus data");
+      setMessage("Jurusan berhasil dihapus");
+      setTimeout(() => setMessage(""), 3500);
       loadData();
-    } catch (e) {
-      console.error(e);
+    } catch (e: any) {
+      alert(e.message || "Gagal menghapus jurusan");
     }
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6 max-w-6xl mx-auto mt-6 text-slate-800">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-[#1d3557]">Manajemen Jurusan</h1>
-        <button onClick={openCreate} className="bg-[#1d3557] text-white px-4 py-2 rounded">+ Tambah Data</button>
+    <div className="bg-white rounded-xl shadow-sm p-6 max-w-6xl mx-auto mt-6 text-slate-800 border border-slate-100">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-[#003399]">Manajemen Jurusan</h1>
+          <p className="text-xs text-slate-500 mt-1">Kelola data program & kompetensi keahlian</p>
+        </div>
+        <button
+          onClick={openCreate}
+          className="bg-[#003399] hover:bg-blue-800 text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition flex items-center gap-2 shadow-sm"
+        >
+          <span>+</span> Tambah Jurusan
+        </button>
       </div>
 
-      {message && <div className="mb-4 p-3 bg-green-100 text-green-700 rounded border border-green-200">{message}</div>}
+      {message && (
+        <div className="mb-4 p-3 bg-emerald-50 text-emerald-700 rounded-lg border border-emerald-200 text-sm flex items-center gap-2">
+          <span>✓</span> {message}
+        </div>
+      )}
 
       <div className="overflow-x-auto rounded-lg border border-slate-200">
         <table className="w-full text-left border-collapse text-sm">
           <thead>
             <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-xs">
-              {fields.map(f => <th key={f.key} className="p-4 font-semibold">{f.label.replace(/_/g, ' ')}</th>)}
+              <th className="p-4 font-semibold">Kode Jurusan</th>
+              <th className="p-4 font-semibold">Nama Jurusan</th>
+              <th className="p-4 font-semibold">Deskripsi</th>
               <th className="p-4 font-semibold text-right">Aksi</th>
             </tr>
           </thead>
           <tbody>
-            {data.map(item => (
-              <tr key={item.id} className="border-b border-slate-100 hover:bg-slate-50">
-                {fields.map(f => <td key={f.key} className="p-4">{item[f.key]}</td>)}
-                <td className="p-4 text-right">
-                  <button onClick={() => openEdit(item)} className="text-blue-600 mr-4 font-medium">Edit</button>
-                  <button onClick={() => remove(item.id)} className="text-red-600 font-medium">Hapus</button>
-                </td>
+            {loading ? (
+              <tr>
+                <td colSpan={4} className="p-8 text-center text-slate-400">Memuat data...</td>
               </tr>
-            ))}
-            {data.length === 0 && <tr><td colSpan={fields.length + 1} className="p-8 text-center text-slate-500">Data kosong</td></tr>}
+            ) : data.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="p-8 text-center text-slate-500">Belum ada data jurusan</td>
+              </tr>
+            ) : (
+              data.map((item) => (
+                <tr key={item.id} className="border-b border-slate-100 hover:bg-slate-50/80 transition">
+                  <td className="p-4 font-semibold">
+                    <span className="inline-block bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-md text-xs font-bold tracking-wide">
+                      {item.kode_jurusan}
+                    </span>
+                  </td>
+                  <td className="p-4 font-medium text-slate-800">{item.nama_jurusan}</td>
+                  <td className="p-4 text-slate-500 text-xs max-w-md truncate">
+                    {item.deskripsi || "-"}
+                  </td>
+                  <td className="p-4 text-right whitespace-nowrap">
+                    <button
+                      onClick={() => openEdit(item)}
+                      className="text-blue-600 hover:text-blue-800 mr-4 font-medium text-xs hover:underline"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => remove(item.id)}
+                      className="text-red-600 hover:text-red-800 font-medium text-xs hover:underline"
+                    >
+                      Hapus
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
 
       {isOpen && (
-        <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center p-4 z-50">
-          <form onSubmit={save} className="bg-white p-6 rounded-xl w-full max-w-md shadow-xl">
-            <h2 className="text-xl font-bold mb-6 text-[#1d3557] border-b pb-3">{editingId ? "Edit" : "Tambah"} Jurusan</h2>
-            
+        <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center p-4 z-50 backdrop-blur-xs">
+          <form onSubmit={save} className="bg-white p-6 rounded-xl w-full max-w-md shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-150">
+            <h2 className="text-xl font-bold mb-5 text-[#003399] border-b pb-3">
+              {editingId ? "Edit Jurusan" : "Tambah Jurusan Baru"}
+            </h2>
+
+            {error && (
+              <div className="mb-4 p-2.5 bg-red-50 text-red-600 rounded-lg border border-red-200 text-xs">
+                {error}
+              </div>
+            )}
+
             <div className="space-y-4">
-              {fields.map(f => (
-                <div key={f.key}>
-                  <label className="block text-sm font-medium text-slate-700 mb-1 capitalize">{f.label.replace(/_/g, ' ')}</label>
-                  <input 
-                    type="text" 
-                    className="w-full border border-slate-300 p-2 rounded-lg outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm" 
-                    value={form[f.key] || ""} 
-                    onChange={e => setForm({...form, [f.key]: e.target.value})} 
-                    required 
-                  />
-                </div>
-              ))}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5 uppercase tracking-wider">
+                  Kode Jurusan *
+                </label>
+                <input
+                  type="text"
+                  placeholder="Contoh: PPLG, TJKT, AKL"
+                  className="w-full border border-slate-300 p-2.5 rounded-lg outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm uppercase"
+                  value={form.kode_jurusan}
+                  onChange={(e) => setForm({ ...form, kode_jurusan: e.target.value.toUpperCase() })}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5 uppercase tracking-wider">
+                  Nama Jurusan *
+                </label>
+                <input
+                  type="text"
+                  placeholder="Contoh: Pengembangan Perangkat Lunak dan Gim"
+                  className="w-full border border-slate-300 p-2.5 rounded-lg outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm"
+                  value={form.nama_jurusan}
+                  onChange={(e) => setForm({ ...form, nama_jurusan: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5 uppercase tracking-wider">
+                  Deskripsi
+                </label>
+                <textarea
+                  rows={3}
+                  placeholder="Deskripsi singkat mengenai jurusan ini..."
+                  className="w-full border border-slate-300 p-2.5 rounded-lg outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm resize-none"
+                  value={form.deskripsi}
+                  onChange={(e) => setForm({ ...form, deskripsi: e.target.value })}
+                />
+              </div>
             </div>
-            
-            <div className="flex justify-end gap-3 mt-8">
-              <button type="button" onClick={() => setIsOpen(false)} className="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50 transition">Batal</button>
-              <button type="submit" className="px-4 py-2 bg-[#1d3557] text-white rounded-lg text-sm font-semibold hover:bg-blue-900 transition">Simpan</button>
+
+            <div className="flex justify-end gap-3 mt-7 pt-4 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setIsOpen(false)}
+                className="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50 transition"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                className="px-5 py-2 bg-[#003399] hover:bg-blue-800 text-white rounded-lg text-sm font-semibold transition shadow-sm"
+              >
+                Simpan
+              </button>
             </div>
           </form>
         </div>
