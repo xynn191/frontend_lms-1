@@ -145,7 +145,7 @@ export default function GuruNilaiPage() {
     <div className="bg-white rounded-xl shadow-xs p-6 max-w-6xl mx-auto text-slate-800 border border-slate-200">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-[#003399]">Rekap Nilai Siswa</h1>
+          <h1 className="text-2xl font-bold text-[#1d3557]">Rekap Nilai Siswa</h1>
           <p className="text-xs text-slate-500 mt-1">
             Input & kelola nilai tugas (30%), kuis (30%), dan ujian (40%) untuk siswa Anda
           </p>
@@ -222,7 +222,7 @@ export default function GuruNilaiPage() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={8} className="p-8 text-center text-slate-400">Memuat siswa dan nilai...</td>
+                <td colSpan={8} className="p-8 text-center text-slate-500">Memuat siswa dan nilai...</td>
               </tr>
             ) : data.length === 0 ? (
               <tr>
@@ -276,7 +276,7 @@ export default function GuruNilaiPage() {
                       />
                     </td>
 
-                    <td className="p-4 text-center font-bold text-base text-[#003399]">
+                    <td className="p-4 text-center font-bold text-base text-[#1d3557]">
                       {item.nilai_akhir ?? 0}
                     </td>
 
@@ -315,4 +315,5 @@ export default function GuruNilaiPage() {
     </div>
   );
 }
+
 

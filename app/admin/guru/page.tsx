@@ -144,7 +144,7 @@ export default function GuruPage() {
     <div className="bg-white rounded-xl shadow-sm p-6 max-w-6xl mx-auto mt-6 text-slate-800 border border-slate-100">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-[#003399]">Manajemen Guru</h1>
+          <h1 className="text-2xl font-bold text-[#1d3557]">Manajemen Guru</h1>
           <p className="text-xs text-slate-500 mt-1">Kelola data tenaga pendidik dan akun login pengajar</p>
         </div>
         <button
@@ -177,7 +177,7 @@ export default function GuruPage() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={7} className="p-8 text-center text-slate-400">Memuat data...</td>
+                <td colSpan={7} className="p-8 text-center text-slate-500">Memuat data...</td>
               </tr>
             ) : data.length === 0 ? (
               <tr>
@@ -187,7 +187,7 @@ export default function GuruPage() {
               data.map((item) => (
                 <tr key={item.id} className="border-b border-slate-100 hover:bg-slate-50/80 transition">
                   <td className="p-4 text-xs font-mono text-slate-600">
-                    {item.nip || <span className="text-slate-400 italic">Tanpa NIP</span>}
+                    {item.nip || <span className="text-slate-500 italic">Tanpa NIP</span>}
                   </td>
                   <td className="p-4 font-semibold text-slate-800">{item.nama_lengkap}</td>
                   <td className="p-4 text-xs">
@@ -236,7 +236,7 @@ export default function GuruPage() {
             onSubmit={save}
             className="bg-white p-6 rounded-xl w-full max-w-xl shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-150"
           >
-            <h2 className="text-xl font-bold mb-5 text-[#003399] border-b pb-3">
+            <h2 className="text-xl font-bold mb-5 text-[#1d3557] border-b pb-3">
               {editingId ? "Edit Data Guru" : "Tambah Guru Baru"}
             </h2>
 
@@ -394,3 +394,4 @@ export default function GuruPage() {
     </div>
   );
 }
+

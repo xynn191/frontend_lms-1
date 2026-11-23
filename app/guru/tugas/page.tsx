@@ -151,7 +151,7 @@ export default function GuruTugasPage() {
     <div className="bg-white rounded-xl shadow-xs p-6 max-w-6xl mx-auto text-slate-800 border border-slate-200">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-[#003399]">Tugas Siswa</h1>
+          <h1 className="text-2xl font-bold text-[#1d3557]">Tugas Siswa</h1>
           <p className="text-xs text-slate-500 mt-1">Buat tugas proyek, latihan mandiri, dan pantau pengumpulan siswa</p>
         </div>
         <button
@@ -183,7 +183,7 @@ export default function GuruTugasPage() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={6} className="p-8 text-center text-slate-400">Memuat data tugas...</td>
+                <td colSpan={6} className="p-8 text-center text-slate-500">Memuat data tugas...</td>
               </tr>
             ) : data.length === 0 ? (
               <tr>
@@ -237,7 +237,7 @@ export default function GuruTugasPage() {
             onSubmit={save}
             className="bg-white p-6 rounded-xl w-full max-w-lg shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-150"
           >
-            <h2 className="text-xl font-bold mb-5 text-[#003399] border-b pb-3">
+            <h2 className="text-xl font-bold mb-5 text-[#1d3557] border-b pb-3">
               {editingId ? "Edit Tugas Siswa" : "Buat Tugas Siswa Baru"}
             </h2>
 
@@ -351,4 +351,5 @@ export default function GuruTugasPage() {
     </div>
   );
 }
+
 

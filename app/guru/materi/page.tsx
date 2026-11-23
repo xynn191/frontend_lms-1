@@ -154,7 +154,7 @@ export default function GuruMateriPage() {
     <div className="bg-white rounded-xl shadow-xs p-6 max-w-6xl mx-auto text-slate-800 border border-slate-200">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-[#003399]">Materi Pembelajaran</h1>
+          <h1 className="text-2xl font-bold text-[#1d3557]">Materi Pembelajaran</h1>
           <p className="text-xs text-slate-500 mt-1">Unggah bahan ajar, modul PDF, dan materi digital untuk kelas Anda</p>
         </div>
         <button
@@ -210,7 +210,7 @@ export default function GuruMateriPage() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={6} className="p-8 text-center text-slate-400">Memuat materi...</td>
+                <td colSpan={6} className="p-8 text-center text-slate-500">Memuat materi...</td>
               </tr>
             ) : data.length === 0 ? (
               <tr>
@@ -251,7 +251,7 @@ export default function GuruMateriPage() {
                           🔗 Tautan Web
                         </a>
                       )}
-                      {!item.file_url && !item.tautan_eksternal && <span className="text-slate-400">-</span>}
+                      {!item.file_url && !item.tautan_eksternal && <span className="text-slate-500">-</span>}
                     </div>
                   </td>
                   <td className="p-4 text-xs text-slate-500 whitespace-nowrap">{item.created_at}</td>
@@ -282,7 +282,7 @@ export default function GuruMateriPage() {
             onSubmit={save}
             className="bg-white p-6 rounded-xl w-full max-w-lg shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-150"
           >
-            <h2 className="text-xl font-bold mb-5 text-[#003399] border-b pb-3">
+            <h2 className="text-xl font-bold mb-5 text-[#1d3557] border-b pb-3">
               {editingId ? "Edit Materi Pembelajaran" : "Tambah Materi Baru"}
             </h2>
 
@@ -410,4 +410,5 @@ export default function GuruMateriPage() {
     </div>
   );
 }
+
 

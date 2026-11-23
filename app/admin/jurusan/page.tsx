@@ -107,7 +107,7 @@ export default function JurusanPage() {
     <div className="bg-white rounded-xl shadow-sm p-6 max-w-6xl mx-auto mt-6 text-slate-800 border border-slate-100">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-[#003399]">Manajemen Jurusan</h1>
+          <h1 className="text-2xl font-bold text-[#1d3557]">Manajemen Jurusan</h1>
           <p className="text-xs text-slate-500 mt-1">Kelola data program & kompetensi keahlian</p>
         </div>
         <button
@@ -137,7 +137,7 @@ export default function JurusanPage() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={4} className="p-8 text-center text-slate-400">Memuat data...</td>
+                <td colSpan={4} className="p-8 text-center text-slate-500">Memuat data...</td>
               </tr>
             ) : data.length === 0 ? (
               <tr>
@@ -179,7 +179,7 @@ export default function JurusanPage() {
       {isOpen && (
         <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center p-4 z-50 backdrop-blur-xs">
           <form onSubmit={save} className="bg-white p-6 rounded-xl w-full max-w-md shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-150">
-            <h2 className="text-xl font-bold mb-5 text-[#003399] border-b pb-3">
+            <h2 className="text-xl font-bold mb-5 text-[#1d3557] border-b pb-3">
               {editingId ? "Edit Jurusan" : "Tambah Jurusan Baru"}
             </h2>
 
@@ -253,3 +253,4 @@ export default function JurusanPage() {
     </div>
   );
 }
+

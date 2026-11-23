@@ -74,7 +74,7 @@ export default function GuruDashboardPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-8">
       {/* Welcome Banner */}
-      <div className="rounded-2xl bg-gradient-to-r from-[#003399] to-[#1e3a8a] p-8 text-white shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="rounded-2xl bg-gradient-to-r from-[#1d3557] to-[#1e3a8a] p-8 text-white shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <span className="inline-block bg-white/15 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider mb-2 text-blue-100">
             Portal Pembelajaran Guru
@@ -89,7 +89,7 @@ export default function GuruDashboardPage() {
         <div className="flex flex-wrap gap-2.5">
           <Link
             href="/guru/materi"
-            className="bg-white text-[#003399] px-4 py-2 rounded-xl text-xs font-bold hover:bg-blue-50 transition shadow-xs"
+            className="bg-white text-[#1d3557] px-4 py-2 rounded-xl text-xs font-bold hover:bg-blue-50 transition shadow-xs"
           >
             + Buat Materi
           </Link>
@@ -122,10 +122,10 @@ export default function GuruDashboardPage() {
             <span className="text-2xl">🏫</span>
           </div>
           <div className="mt-3">
-            <p className="text-3xl font-extrabold text-[#003399]">
+            <p className="text-3xl font-extrabold text-[#1d3557]">
               {loading ? "..." : data?.total_kelas ?? 0}
             </p>
-            <p className="text-xs text-slate-400 mt-0.5">Rombongan Belajar</p>
+            <p className="text-xs text-slate-500 mt-0.5">Rombongan Belajar</p>
           </div>
         </div>
 
@@ -138,7 +138,7 @@ export default function GuruDashboardPage() {
             <p className="text-3xl font-extrabold text-emerald-600">
               {loading ? "..." : data?.total_materi ?? 0}
             </p>
-            <p className="text-xs text-slate-400 mt-0.5">Modul pembelajaran</p>
+            <p className="text-xs text-slate-500 mt-0.5">Modul pembelajaran</p>
           </div>
         </div>
 
@@ -151,7 +151,7 @@ export default function GuruDashboardPage() {
             <p className="text-3xl font-extrabold text-blue-600">
               {loading ? "..." : data?.total_tugas ?? 0}
             </p>
-            <p className="text-xs text-slate-400 mt-0.5">Tugas siswa</p>
+            <p className="text-xs text-slate-500 mt-0.5">Tugas siswa</p>
           </div>
         </div>
 
@@ -164,7 +164,7 @@ export default function GuruDashboardPage() {
             <p className="text-3xl font-extrabold text-amber-600">
               {loading ? "..." : (data?.total_kuis ?? 0) + (data?.total_ujian ?? 0)}
             </p>
-            <p className="text-xs text-slate-400 mt-0.5">{data?.total_kuis ?? 0} Kuis • {data?.total_ujian ?? 0} Ujian</p>
+            <p className="text-xs text-slate-500 mt-0.5">{data?.total_kuis ?? 0} Kuis • {data?.total_ujian ?? 0} Ujian</p>
           </div>
         </div>
       </div>
@@ -175,7 +175,7 @@ export default function GuruDashboardPage() {
         <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-xs p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-base font-bold text-slate-800">Daftar Kelas & Mata Pelajaran</h2>
-            <span className="text-xs text-slate-400 font-medium">Semester Ganjil 2025/2026</span>
+            <span className="text-xs text-slate-500 font-medium">Semester Ganjil 2025/2026</span>
           </div>
 
           <div className="overflow-x-auto">
@@ -191,7 +191,7 @@ export default function GuruDashboardPage() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={4} className="p-6 text-center text-slate-400 text-xs">Memuat kelas...</td>
+                    <td colSpan={4} className="p-6 text-center text-slate-500 text-xs">Memuat kelas...</td>
                   </tr>
                 ) : data?.kelas_ajar && data.kelas_ajar.length > 0 ? (
                   data.kelas_ajar.map((item, idx) => (
@@ -206,7 +206,7 @@ export default function GuruDashboardPage() {
                       <td className="p-3 text-right">
                         <Link
                           href={`/guru/nilai?kelas_id=${item.kelas_id}&mapel_id=${item.mapel_id}`}
-                          className="text-xs font-semibold text-[#003399] hover:underline"
+                          className="text-xs font-semibold text-[#1d3557] hover:underline"
                         >
                           Buka Nilai →
                         </Link>
@@ -215,7 +215,7 @@ export default function GuruDashboardPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={4} className="p-6 text-center text-slate-400 text-xs">Belum ada penugasan mengajar</td>
+                    <td colSpan={4} className="p-6 text-center text-slate-500 text-xs">Belum ada penugasan mengajar</td>
                   </tr>
                 )}
               </tbody>
@@ -229,7 +229,7 @@ export default function GuruDashboardPage() {
           <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-5">
             <div className="flex justify-between items-center mb-3">
               <h3 className="text-sm font-bold text-slate-800">Tugas Terbaru</h3>
-              <Link href="/guru/tugas" className="text-xs text-[#003399] font-medium hover:underline">
+              <Link href="/guru/tugas" className="text-xs text-[#1d3557] font-medium hover:underline">
                 Semua →
               </Link>
             </div>
@@ -247,7 +247,7 @@ export default function GuruDashboardPage() {
                   </div>
                 ))
               ) : (
-                <p className="text-slate-400 text-xs py-2">Belum ada tugas dibuat.</p>
+                <p className="text-slate-500 text-xs py-2">Belum ada tugas dibuat.</p>
               )}
             </div>
           </div>
@@ -256,7 +256,7 @@ export default function GuruDashboardPage() {
           <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-5">
             <div className="flex justify-between items-center mb-3">
               <h3 className="text-sm font-bold text-slate-800">Materi Terakhir</h3>
-              <Link href="/guru/materi" className="text-xs text-[#003399] font-medium hover:underline">
+              <Link href="/guru/materi" className="text-xs text-[#1d3557] font-medium hover:underline">
                 Semua →
               </Link>
             </div>
@@ -268,13 +268,13 @@ export default function GuruDashboardPage() {
                     <p className="text-[11px] text-slate-500 mt-0.5">
                       {m.nama_kelas} • {m.nama_mapel}
                     </p>
-                    <p className="text-[10px] text-slate-400 mt-1">
+                    <p className="text-[10px] text-slate-500 mt-1">
                       📅 Diunggah: {m.created_at}
                     </p>
                   </div>
                 ))
               ) : (
-                <p className="text-slate-400 text-xs py-2">Belum ada materi pembelajaran.</p>
+                <p className="text-slate-500 text-xs py-2">Belum ada materi pembelajaran.</p>
               )}
             </div>
           </div>
@@ -283,4 +283,5 @@ export default function GuruDashboardPage() {
     </div>
   );
 }
+
 
