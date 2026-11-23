@@ -15,10 +15,21 @@ type Guru = {
   status: "aktif" | "nonaktif";
   email: string;
   username: string;
+  mata_pelajaran_ids?: number[];
+  mata_pelajaran?: string[];
+};
+
+type MataPelajaran = {
+  id: number;
+  kode_mapel: string;
+  nama_mapel: string;
+  kelompok: string;
+  deskripsi: string;
 };
 
 export default function GuruPage() {
   const [data, setData] = useState<Guru[]>([]);
+  const [mapelList, setMapelList] = useState<MataPelajaran[]>([]);
   const [form, setForm] = useState({
     nip: "",
     nama_lengkap: "",
@@ -29,6 +40,7 @@ export default function GuruPage() {
     no_telepon: "",
     alamat: "",
     status: "aktif" as "aktif" | "nonaktif",
+    mata_pelajaran_ids: [] as number[],
   });
   const [editingId, setEditingId] = useState<number | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -52,8 +64,23 @@ export default function GuruPage() {
     }
   };
 
+  const loadMapel = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/mata-pelajaran`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token") || ""}` },
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setMapelList(json || []);
+      }
+    } catch (e) {
+      console.error("Gagal memuat mata pelajaran:", e);
+    }
+  };
+
   useEffect(() => {
     loadData();
+    loadMapel();
   }, []);
 
   const openCreate = () => {
@@ -67,6 +94,7 @@ export default function GuruPage() {
       no_telepon: "",
       alamat: "",
       status: "aktif",
+      mata_pelajaran_ids: [],
     });
     setEditingId(null);
     setError("");
@@ -84,10 +112,28 @@ export default function GuruPage() {
       no_telepon: item.no_telepon || "",
       alamat: item.alamat || "",
       status: item.status || "aktif",
+      mata_pelajaran_ids: item.mata_pelajaran_ids || [],
     });
     setEditingId(item.id);
     setError("");
     setIsOpen(true);
+  };
+
+  const handleAddMapel = (id: number) => {
+    if (!id) return;
+    if (!form.mata_pelajaran_ids.includes(id)) {
+      setForm((prev) => ({
+        ...prev,
+        mata_pelajaran_ids: [...prev.mata_pelajaran_ids, id],
+      }));
+    }
+  };
+
+  const handleRemoveMapel = (id: number) => {
+    setForm((prev) => ({
+      ...prev,
+      mata_pelajaran_ids: prev.mata_pelajaran_ids.filter((item) => item !== id),
+    }));
   };
 
   const save = async (e: React.FormEvent) => {
@@ -97,6 +143,11 @@ export default function GuruPage() {
 
     if (!editingId && !form.password) {
       setError("Password wajib diisi untuk guru baru");
+      return;
+    }
+
+    if (form.mata_pelajaran_ids.length === 0) {
+      setError("Minimal 1 mata pelajaran yang diampu wajib dipilih");
       return;
     }
 
@@ -145,7 +196,7 @@ export default function GuruPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-[#1d3557]">Manajemen Guru</h1>
-          <p className="text-xs text-slate-500 mt-1">Kelola data tenaga pendidik dan akun login pengajar</p>
+          <p className="text-xs text-slate-500 mt-1">Kelola data tenaga pendidik, mata pelajaran yang diampu, dan akun login pengajar</p>
         </div>
         <button
           onClick={openCreate}
@@ -167,6 +218,7 @@ export default function GuruPage() {
             <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-xs">
               <th className="p-4 font-semibold">NIP</th>
               <th className="p-4 font-semibold">Nama Lengkap</th>
+              <th className="p-4 font-semibold">Mata Pelajaran Diampu</th>
               <th className="p-4 font-semibold">Akun (Username / Email)</th>
               <th className="p-4 font-semibold">L/P</th>
               <th className="p-4 font-semibold">No. Telepon</th>
@@ -177,19 +229,35 @@ export default function GuruPage() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={7} className="p-8 text-center text-slate-500">Memuat data...</td>
+                <td colSpan={8} className="p-8 text-center text-slate-500">Memuat data...</td>
               </tr>
             ) : data.length === 0 ? (
               <tr>
-                <td colSpan={7} className="p-8 text-center text-slate-500">Belum ada data guru</td>
+                <td colSpan={8} className="p-8 text-center text-slate-500">Belum ada data guru</td>
               </tr>
             ) : (
               data.map((item) => (
                 <tr key={item.id} className="border-b border-slate-100 hover:bg-slate-50/80 transition">
                   <td className="p-4 text-xs font-mono text-slate-600">
-                    {item.nip || <span className="text-slate-500 italic">Tanpa NIP</span>}
+                    {item.nip || <span className="text-slate-400 italic">Tanpa NIP</span>}
                   </td>
                   <td className="p-4 font-semibold text-slate-800">{item.nama_lengkap}</td>
+                  <td className="p-4">
+                    {item.mata_pelajaran && item.mata_pelajaran.length > 0 ? (
+                      <div className="flex flex-wrap gap-1.5 max-w-xs">
+                        {item.mata_pelajaran.map((nama, idx) => (
+                          <span
+                            key={idx}
+                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-[#003399] border border-blue-200"
+                          >
+                            📖 {nama}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-slate-400 text-xs italic">Belum ada mapel</span>
+                    )}
+                  </td>
                   <td className="p-4 text-xs">
                     <p className="font-medium text-slate-800">{item.username}</p>
                     <p className="text-slate-500">{item.email}</p>
@@ -287,6 +355,57 @@ export default function GuruPage() {
                   <option value="L">Laki-laki</option>
                   <option value="P">Perempuan</option>
                 </select>
+              </div>
+
+              {/* Pemilihan Mata Pelajaran yang Diampu (Multi-Select Badge) */}
+              <div className="md:col-span-2">
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5 uppercase tracking-wider">
+                  Mata Pelajaran yang Diampu *
+                </label>
+                
+                <select
+                  className="w-full border border-slate-300 p-2.5 rounded-lg outline-none focus:border-blue-500 bg-white text-sm mb-2"
+                  value=""
+                  onChange={(e) => handleAddMapel(Number(e.target.value))}
+                >
+                  <option value="">+ Pilih Mata Pelajaran untuk Ditambahkan...</option>
+                  {mapelList
+                    .filter((m) => !form.mata_pelajaran_ids.includes(m.id))
+                    .map((m) => (
+                      <option key={m.id} value={m.id}>
+                        [{m.kode_mapel}] {m.nama_mapel} ({m.kelompok})
+                      </option>
+                    ))}
+                </select>
+
+                {/* Badge Tag Mapel Terpilih */}
+                <div className="min-h-[42px] p-2 bg-slate-50 border border-slate-200 rounded-lg flex flex-wrap gap-2 items-center">
+                  {form.mata_pelajaran_ids.length === 0 ? (
+                    <span className="text-xs text-amber-600 font-medium italic">
+                      ⚠️ Belum ada mata pelajaran dipilih (Wajib pilih minimal 1 mata pelajaran)
+                    </span>
+                  ) : (
+                    form.mata_pelajaran_ids.map((id) => {
+                      const mapel = mapelList.find((m) => m.id === id);
+                      return (
+                        <span
+                          key={id}
+                          className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-100 text-[#003399] border border-blue-200 rounded-lg text-xs font-semibold shadow-2xs"
+                        >
+                          <span>📖 {mapel ? `${mapel.nama_mapel} (${mapel.kode_mapel})` : `Mapel #${id}`}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveMapel(id)}
+                            className="w-4 h-4 rounded-full bg-blue-200 hover:bg-blue-300 text-[#003399] flex items-center justify-center font-bold text-xs transition"
+                            title="Hapus mata pelajaran"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      );
+                    })
+                  )}
+                </div>
               </div>
 
               <div>
@@ -394,4 +513,3 @@ export default function GuruPage() {
     </div>
   );
 }
-

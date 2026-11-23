@@ -46,7 +46,7 @@ export default function GuruNilaiPage() {
       const headers = { Authorization: `Bearer ${localStorage.getItem("token") || ""}` };
       const [kRes, mRes] = await Promise.all([
         fetch(`${API_URL}/api/kelas`, { headers }),
-        fetch(`${API_URL}/api/mata-pelajaran`, { headers }),
+        fetch(`${API_URL}/api/guru/mata-pelajaran`, { headers }),
       ]);
       const kJson = await kRes.json();
       const mJson = await mRes.json();

@@ -99,13 +99,74 @@ export default function KelasPage() {
     }
   }, [form.tingkat, form.jurusan_id, form.nomor_rombel, isManualName, jurusanList]);
 
+  // Fungsi pencari nomor rombel berikutnya secara otomatis
+  const getNextRombelNumber = (jurId: string | number, tk: string): string => {
+    if (!jurId) return "1";
+
+    // 1. Ambil semua kelas pada jurusan dan tingkat yang sama
+    const filtered = data.filter(
+      (k) => String(k.jurusan_id) === String(jurId) && k.tingkat === tk
+    );
+
+    if (filtered.length === 0) return "1";
+
+    // 2. Ambil angka rombel dari akhir nama kelas (contoh: "X PPLG 1" -> 1, "X PPLG 2" -> 2)
+    const numbers = filtered
+      .map((k) => {
+        const parts = k.nama_kelas.trim().split(" ");
+        const last = parts[parts.length - 1];
+        const parsed = parseInt(last, 10);
+        return isNaN(parsed) ? 0 : parsed;
+      })
+      .filter((n) => n > 0);
+
+    if (numbers.length === 0) return String(filtered.length + 1);
+
+    // 3. Cari angka rombel tertinggi lalu tambah 1
+    const maxNumber = Math.max(...numbers);
+    return String(maxNumber + 1);
+  };
+
+  const handleJurusanChange = (newJurId: string) => {
+    if (!editingId && !isManualName) {
+      const nextRombel = getNextRombelNumber(newJurId, form.tingkat);
+      const selectedJur = jurusanList.find((j) => String(j.id) === String(newJurId));
+      const code = selectedJur ? selectedJur.kode_jurusan : "";
+      const generated = `${form.tingkat} ${code} ${nextRombel}`.trim();
+      setForm((prev) => ({
+        ...prev,
+        jurusan_id: newJurId,
+        nomor_rombel: nextRombel,
+        nama_kelas: generated,
+      }));
+    } else {
+      setForm((prev) => ({ ...prev, jurusan_id: newJurId }));
+    }
+  };
+
+  const handleTingkatChange = (newTingkat: "X" | "XI" | "XII") => {
+    if (!editingId && !isManualName) {
+      const nextRombel = getNextRombelNumber(form.jurusan_id, newTingkat);
+      const selectedJur = jurusanList.find((j) => String(j.id) === String(form.jurusan_id));
+      const code = selectedJur ? selectedJur.kode_jurusan : "";
+      const generated = `${newTingkat} ${code} ${nextRombel}`.trim();
+      setForm((prev) => ({
+        ...prev,
+        tingkat: newTingkat,
+        nomor_rombel: nextRombel,
+        nama_kelas: generated,
+      }));
+    } else {
+      setForm((prev) => ({ ...prev, tingkat: newTingkat }));
+    }
+  };
+
   const openCreate = (defaultJurusanId?: number, defaultTingkat?: "X" | "XI" | "XII") => {
     const jurId = defaultJurusanId ? String(defaultJurusanId) : jurusanList[0]?.id ? String(jurusanList[0].id) : "";
     const tk = defaultTingkat || (selectedTingkat !== "all" ? (selectedTingkat as "X" | "XI" | "XII") : "X");
     
-    // Cari nomor rombel berikutnya
-    const existingInGroup = data.filter((k) => String(k.jurusan_id) === String(jurId) && k.tingkat === tk);
-    const nextRombel = String(existingInGroup.length + 1);
+    // Hitung nomor rombel berikutnya secara otomatis
+    const nextRombel = getNextRombelNumber(jurId, tk);
 
     const selectedJur = jurusanList.find((j) => String(j.id) === String(jurId));
     const code = selectedJur ? selectedJur.kode_jurusan : "";
@@ -145,8 +206,40 @@ export default function KelasPage() {
     setIsOpen(true);
   };
 
+  // Cek apakah nama kelas saat ini duplikat
+  const isDuplicateName = useMemo(() => {
+    if (!form.nama_kelas.trim()) return false;
+    return data.some(
+      (k) =>
+        k.id !== editingId &&
+        k.nama_kelas.trim().toLowerCase() === form.nama_kelas.trim().toLowerCase()
+    );
+  }, [data, form.nama_kelas, editingId]);
+
+  // Daftar nomor rombel yang SUDAH digunakan pada jurusan dan tingkat ini
+  const usedRombels = useMemo(() => {
+    if (!form.jurusan_id) return new Set<string>();
+    const filtered = data.filter(
+      (k) =>
+        String(k.jurusan_id) === String(form.jurusan_id) &&
+        k.tingkat === form.tingkat &&
+        k.id !== editingId
+    );
+    return new Set(
+      filtered.map((k) => {
+        const parts = k.nama_kelas.trim().split(" ");
+        return parts[parts.length - 1];
+      })
+    );
+  }, [data, form.jurusan_id, form.tingkat, editingId]);
+
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isDuplicateName) {
+      setError(`Kelas "${form.nama_kelas}" sudah terdaftar. Nomor rombel tidak boleh duplikat.`);
+      return;
+    }
+
     const url = editingId ? `${API_URL}/api/kelas/${editingId}` : `${API_URL}/api/kelas`;
     const method = editingId ? "PUT" : "POST";
 
@@ -704,7 +797,7 @@ export default function KelasPage() {
                   <select
                     className="w-full border border-slate-300 p-2.5 rounded-xl outline-none focus:border-[#003399] bg-white text-xs font-semibold"
                     value={form.jurusan_id}
-                    onChange={(e) => setForm({ ...form, jurusan_id: e.target.value })}
+                    onChange={(e) => handleJurusanChange(e.target.value)}
                     required
                   >
                     <option value="">-- Pilih Jurusan --</option>
@@ -723,7 +816,7 @@ export default function KelasPage() {
                   <select
                     className="w-full border border-slate-300 p-2.5 rounded-xl outline-none focus:border-[#003399] bg-white text-xs font-semibold"
                     value={form.tingkat}
-                    onChange={(e) => setForm({ ...form, tingkat: e.target.value as "X" | "XI" | "XII" })}
+                    onChange={(e) => handleTingkatChange(e.target.value as "X" | "XI" | "XII")}
                     required
                   >
                     <option value="X">Tingkat X (Kelas 10)</option>
@@ -735,28 +828,53 @@ export default function KelasPage() {
 
               {/* Rombel Index & Generator */}
               <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                    Nomor Rombel Ke-
-                  </label>
-                  <div className="flex items-center gap-1">
-                    {[1, 2, 3, 4, 5].map((num) => (
-                      <button
-                        type="button"
-                        key={num}
-                        onClick={() => {
-                          setForm((prev) => ({ ...prev, nomor_rombel: String(num) }));
-                          setIsManualName(false);
-                        }}
-                        className={`w-7 h-7 rounded-lg text-xs font-bold transition cursor-pointer ${
-                          form.nomor_rombel === String(num)
-                            ? "bg-[#003399] text-white"
-                            : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
-                        }`}
-                      >
-                        {num}
-                      </button>
-                    ))}
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      Nomor Rombel Ke-
+                    </label>
+                    {!editingId && (
+                      <span className="text-[10px] font-semibold px-2 py-0.5 bg-blue-50 text-[#003399] border border-blue-200 rounded-md">
+                        Otomatis terhitung: {form.nomor_rombel}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1 flex-wrap justify-end">
+                    {Array.from(
+                      { length: Math.max(5, Number(form.nomor_rombel) || 1) },
+                      (_, i) => i + 1
+                    ).map((num) => {
+                      const isUsed = usedRombels.has(String(num));
+                      const isSelected = form.nomor_rombel === String(num);
+
+                      return (
+                        <button
+                          type="button"
+                          key={num}
+                          disabled={isUsed && !editingId}
+                          onClick={() => {
+                            if (!isUsed || editingId) {
+                              setForm((prev) => ({ ...prev, nomor_rombel: String(num) }));
+                              setIsManualName(false);
+                            }
+                          }}
+                          title={
+                            isUsed
+                              ? `Rombel ke-${num} sudah terdaftar (tidak boleh duplikat)`
+                              : `Pilih rombel ke-${num}`
+                          }
+                          className={`w-7 h-7 rounded-lg text-xs font-bold transition flex items-center justify-center ${
+                            isSelected
+                              ? "bg-[#003399] text-white shadow-xs"
+                              : isUsed && !editingId
+                              ? "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-50 line-through"
+                              : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 cursor-pointer"
+                          }`}
+                        >
+                          {num}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -775,7 +893,11 @@ export default function KelasPage() {
                   </div>
                   <input
                     type="text"
-                    className="w-full border border-slate-300 p-2.5 rounded-xl outline-none focus:border-[#003399] focus:ring-1 focus:ring-[#003399] text-sm font-bold text-[#1d3557] bg-white"
+                    className={`w-full border p-2.5 rounded-xl outline-none text-sm font-bold bg-white transition ${
+                      isDuplicateName
+                        ? "border-red-500 focus:border-red-600 focus:ring-1 focus:ring-red-500 text-red-900 bg-red-50/20"
+                        : "border-slate-300 focus:border-[#003399] focus:ring-1 focus:ring-[#003399] text-[#1d3557]"
+                    }`}
                     value={form.nama_kelas}
                     onChange={(e) => {
                       setIsManualName(true);
@@ -784,9 +906,18 @@ export default function KelasPage() {
                     placeholder="Contoh: X PPLG 1"
                     required
                   />
-                  <p className="text-[11px] text-slate-400 mt-1">
-                    Format standar: <strong>[Tingkat] [Kode Jurusan] [Nomor Rombel]</strong>
-                  </p>
+                  {isDuplicateName ? (
+                    <div className="mt-2 p-2.5 bg-red-50 text-red-700 rounded-lg border border-red-200 text-xs font-medium flex items-center gap-1.5 animate-in fade-in duration-100">
+                      <span>⚠️</span>
+                      <span>
+                        Kelas <strong>{form.nama_kelas}</strong> sudah terdaftar di sistem. Nomor rombel tidak boleh duplikat.
+                      </span>
+                    </div>
+                  ) : (
+                    <p className="text-[11px] text-slate-400 mt-1">
+                      Format standar: <strong>[Tingkat] [Kode Jurusan] [Nomor Rombel]</strong>
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -820,7 +951,12 @@ export default function KelasPage() {
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 bg-[#003399] hover:bg-blue-800 text-white rounded-xl text-xs font-bold transition shadow-sm cursor-pointer"
+                disabled={isDuplicateName}
+                className={`px-5 py-2 rounded-xl text-xs font-bold transition shadow-sm ${
+                  isDuplicateName
+                    ? "bg-slate-300 text-slate-500 cursor-not-allowed"
+                    : "bg-[#003399] hover:bg-blue-800 text-white cursor-pointer"
+                }`}
               >
                 {editingId ? "Simpan Perubahan" : "Buat Rombel Kelas"}
               </button>

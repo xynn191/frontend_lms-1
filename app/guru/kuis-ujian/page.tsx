@@ -58,7 +58,7 @@ export default function GuruKuisUjianPage() {
       const [kuisRes, kelasRes, mapelRes] = await Promise.all([
         fetch(url, { headers }),
         fetch(`${API_URL}/api/kelas`, { headers }),
-        fetch(`${API_URL}/api/mata-pelajaran`, { headers }),
+        fetch(`${API_URL}/api/guru/mata-pelajaran`, { headers }),
       ]);
 
       const kuisJson = await kuisRes.json();

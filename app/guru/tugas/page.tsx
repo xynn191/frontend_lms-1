@@ -48,7 +48,7 @@ export default function GuruTugasPage() {
       const [tugasRes, kelasRes, mapelRes] = await Promise.all([
         fetch(`${API_URL}/api/guru/tugas`, { headers }),
         fetch(`${API_URL}/api/kelas`, { headers }),
-        fetch(`${API_URL}/api/mata-pelajaran`, { headers }),
+        fetch(`${API_URL}/api/guru/mata-pelajaran`, { headers }),
       ]);
 
       const tugasJson = await tugasRes.json();
@@ -291,14 +291,20 @@ export default function GuruTugasPage() {
                     value={form.mata_pelajaran_id}
                     onChange={(e) => setForm({ ...form, mata_pelajaran_id: e.target.value })}
                     required
+                    disabled={mapelList.length === 0}
                   >
-                    <option value="">-- Pilih Mapel --</option>
+                    <option value="">{mapelList.length === 0 ? "-- Anda belum memiliki mapel diampu --" : "-- Pilih Mapel yang Diampu --"}</option>
                     {mapelList.map((m) => (
                       <option key={m.id} value={m.id}>
                         {m.nama}
                       </option>
                     ))}
                   </select>
+                  {mapelList.length === 0 && (
+                    <p className="text-[11px] text-amber-600 mt-1">
+                      ⚠️ Anda belum ditugaskan mengampu mata pelajaran apapun. Hubungi Admin atau Kurikulum.
+                    </p>
+                  )}
                 </div>
               </div>
 
